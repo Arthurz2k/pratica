@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde:#58cc02; --verde-escuro:#4aa802; --verde-claro:#d7ffb8;
+    --azul:#1cb0f6; --azul-escuro:#1899d6;
+    --roxo:#ce82ff; --amarelo:#ffc800; --vermelho:#ff4b4b;
+
+    --superficie:#fff; --superficie2:#f7f7f7;
+    --texto:#3c3c3c; --texto-suave:#7a7a7a; --cinza:#afafaf;
+    --placeholder:#c8c8c8; --apagado:#d0d0d0;
+    --borda:#e5e5e5; --borda-forte:#c9c9c9;
+
+    --t-azul:#ddf4ff;    --b-azul:#b9e5fb;
+    --t-verde:#eaffd6;   --b-verde:#c3ef9a;   --c-verde:#58a700;
+    --t-amarelo:#fff6dc; --b-amarelo:#ffe9a8; --c-amarelo:#b98600;
+    --t-roxo:#f7ecff;    --b-roxo:#ecd5ff;
+    --t-vermelho:#ffdfe0; --b-vermelho:#ffb5b5; --c-vermelho:#ea2b2b;
+  }
+
+  body.escuro{
+    --verde-escuro:#3d8c02; --azul-escuro:#5fcaff;
+    --verde-claro:#1d3312;
+
+    --superficie:#181b20; --superficie2:#20242b;
+    --texto:#e9ecef; --texto-suave:#9aa2ab; --cinza:#79818b;
+    --placeholder:#5d646d; --apagado:#3a4048;
+    --borda:#2c323a; --borda-forte:#444c56;
+
+    --t-azul:#102e3d;    --b-azul:#1d556e;
+    --t-verde:#17300f;   --b-verde:#2f5f1a;   --c-verde:#8ee04e;
+    --t-amarelo:#332a0e; --b-amarelo:#5e4c15; --c-amarelo:#ffc94d;
+    --t-roxo:#2a2136;    --b-roxo:#4a3a5c;
+    --t-vermelho:#3a1618; --b-vermelho:#6d2a2d; --c-vermelho:#ff8f8f;
+  }
+
+  /* a animação só entra depois da primeira pintura, para não piscar ao abrir */
+  body.anima, body.anima .topo, body.anima .barra, body.anima .ficha,
+  body.anima .cartao, body.anima .campo, body.anima .chip, body.anima .seg,
+  body.anima .som, body.anima .msg, body.anima .frase, body.anima .config,
+  body.anima .fbtn, body.anima .selo, body.anima .pasta, body.anima .editar,
+  body.anima .btn-leve, body.anima .lista-pastas button{
+    transition:background-color .28s ease, color .28s ease, border-color .28s ease;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    color:var(--texto);background:var(--superficie);font-size:16px;line-height:1.4;
+    -webkit-font-smoothing:antialiased;padding-bottom:124px;
+  }
+  .topo{position:sticky;top:0;z-index:20;background:var(--superficie);border-bottom:2px solid var(--borda);padding:14px 16px 0}
+  .placar{display:flex;gap:10px}
+
+  .tema{position:relative;width:52px;height:28px;flex:0 0 auto;align-self:center;margin-left:10px;
+    border:2px solid var(--borda);border-radius:20px;background:var(--superficie2);cursor:pointer;padding:0;
+    transition:background-color .28s ease, border-color .28s ease}
+  .tema .bolinha{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;
+    background:var(--amarelo);display:flex;align-items:center;justify-content:center;font-size:11px;
+    transition:transform .28s cubic-bezier(.34,1.4,.64,1), background-color .28s ease}
+  body.escuro .tema .bolinha{transform:translateX(24px);background:#d7dde5}
+  .item{flex:1;border:2px solid var(--borda);border-radius:14px;padding:8px 6px;text-align:center}
+  .item b{display:block;font-size:22px;font-weight:900;line-height:1.1}
+  .item span{font-size:11px;font-weight:700;color:var(--cinza)}
+  .fogo b{color:var(--amarelo)} .pal b{color:var(--azul)} .dom b{color:var(--verde)}
+
+  .abas{display:flex;margin-top:12px}
+  .aba{flex:1;border:none;background:none;font-family:inherit;font-size:15px;font-weight:800;
+    color:var(--cinza);padding:10px 0;border-bottom:3px solid transparent;cursor:pointer}
+  .aba.ativa{color:var(--azul);border-bottom-color:var(--azul)}
+
+  main{padding:18px 16px 0;max-width:560px;margin:0 auto}
+  .titulo{font-size:22px;font-weight:800;margin:0 0 16px}
+
+  label{display:block;font-size:13px;font-weight:800;color:var(--cinza);margin:0 0 6px}
+  .dica{font-weight:700;color:var(--placeholder)}
+  .campo{width:100%;font-family:inherit;font-size:17px;font-weight:700;color:var(--texto);
+    background:var(--superficie);border:2px solid var(--borda);border-radius:14px;padding:14px;
+    margin-bottom:16px;outline:none;resize:none}
+  .campo::placeholder{color:var(--placeholder);font-weight:600}
+  .campo:focus{border-color:var(--azul)}
+  #palavra{font-size:22px;font-weight:800}
+  #pronuncia{color:var(--azul-escuro)}
+  textarea.campo{min-height:80px}
+
+  .segmento{display:flex;gap:8px;margin-bottom:18px}
+  .seg{flex:1;font-family:inherit;font-size:15px;font-weight:800;color:var(--cinza);background:var(--superficie);
+    border:2px solid var(--borda);border-bottom-width:4px;border-radius:14px;padding:11px 0;cursor:pointer}
+  .seg[aria-pressed="true"]{color:var(--verde-escuro);border-color:var(--verde);background:var(--t-verde)}
+
+  .linha-som{display:flex;gap:8px;align-items:flex-start}
+  .linha-som .campo{flex:1}
+  .som{flex:0 0 auto;width:54px;height:54px;border:2px solid var(--borda);border-bottom-width:4px;
+    border-radius:14px;background:var(--superficie);color:var(--azul);font-size:22px;cursor:pointer;line-height:1}
+  .som:active{transform:translateY(2px);border-bottom-width:2px}
+  .som[disabled]{color:var(--apagado);cursor:default;transform:none}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+  .chip{font-family:inherit;font-size:14px;font-weight:800;color:var(--cinza);background:var(--superficie);
+    border:2px solid var(--borda);border-bottom-width:4px;border-radius:12px;padding:8px 14px;cursor:pointer}
+  .chip[aria-pressed="true"]{color:var(--roxo);border-color:var(--roxo);background:var(--t-roxo)}
+  .chip.nova{color:var(--azul);border-style:dashed;border-bottom-width:2px}
+
+  .btn{display:block;width:100%;max-width:560px;margin:0 auto;font-family:inherit;font-size:16px;
+    font-weight:800;letter-spacing:.4px;color:#fff;background:var(--verde);border:none;
+    border-bottom:4px solid var(--verde-escuro);border-radius:16px;padding:15px;cursor:pointer;text-transform:uppercase}
+  .btn:active{transform:translateY(3px);border-bottom-width:1px}
+  .btn[disabled]{background:var(--borda);border-bottom-color:var(--apagado);color:#fff;cursor:default;transform:none}
+  .btn-leve{background:var(--superficie);color:var(--azul);border:2px solid var(--borda);border-bottom-width:4px;
+    text-transform:none;letter-spacing:0;font-size:15px;padding:12px;margin-bottom:18px}
+  .btn-leve[disabled]{background:var(--superficie);color:var(--apagado)}
+
+  .barra{position:fixed;left:0;right:0;bottom:0;background:var(--superficie);border-top:2px solid var(--borda);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));z-index:15}
+  .linha-chat{display:flex;gap:8px;max-width:560px;margin:0 auto;align-items:flex-end}
+  .linha-chat textarea{flex:1;margin:0;min-height:52px;max-height:120px;font-size:16px}
+  .enviar{flex:0 0 auto;width:54px;height:52px;border:none;border-bottom:4px solid var(--verde-escuro);
+    background:var(--verde);color:#fff;border-radius:14px;font-size:20px;cursor:pointer}
+  .enviar[disabled]{background:var(--borda);border-bottom-color:var(--apagado)}
+
+  .cartao{border:2px solid var(--borda);border-bottom-width:4px;border-radius:16px;padding:14px;margin-bottom:12px}
+  .cab{display:flex;align-items:center;gap:8px}
+  .cab h3{margin:0;font-size:20px;font-weight:900}
+  .ouvir{border:none;background:none;color:var(--azul);font-size:17px;padding:2px 4px;cursor:pointer;line-height:1}
+  .ouvir[disabled]{color:var(--cinza);cursor:default}
+  .cab .data{margin-left:auto;font-size:12px;font-weight:700;color:var(--cinza)}
+  .fon{margin:2px 0 0;font-size:14px;font-weight:800;color:var(--azul-escuro)}
+  .sig{margin:6px 0 0;font-weight:700}
+  .frase{margin:10px 0 0;padding:10px 12px;background:var(--superficie2);border-radius:12px;font-weight:700;color:var(--texto-suave)}
+  .tok{font:inherit;color:inherit;background:none;border:none;padding:0 1px;cursor:pointer;
+    border-bottom:2px dotted var(--borda-forte)}
+  .tok:hover,.tok:focus{color:var(--azul);border-bottom-color:var(--azul);outline:none}
+  .traducao{margin:8px 0 0;font-weight:700;font-style:italic;color:var(--texto-suave);font-size:15px}
+  .acoes{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .selo{font-family:inherit;font-size:12px;font-weight:800;padding:6px 12px;border-radius:20px;
+    border:2px solid;background:var(--superficie);cursor:pointer}
+  .Novo{color:var(--azul);border-color:var(--b-azul);background:var(--t-azul)}
+  .Revisando{color:var(--c-amarelo);border-color:var(--b-amarelo);background:var(--superficie)6dc}
+  .Dominado{color:var(--verde-escuro);border-color:var(--b-verde);background:var(--t-verde)}
+  .pasta{font-family:inherit;font-size:12px;font-weight:800;padding:6px 12px;border-radius:20px;
+    border:2px solid var(--borda);background:var(--superficie);color:var(--cinza);cursor:pointer}
+  .pasta.tem{color:var(--roxo);border-color:var(--b-roxo);background:var(--t-roxo)}
+  .lixo{margin-left:auto;border:none;background:none;font-size:18px;color:var(--apagado);cursor:pointer;padding:4px 6px}
+
+  .temas{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+  .tema-card{text-align:left;font-family:inherit;background:var(--superficie);border:2px solid var(--borda);
+    border-bottom-width:4px;border-radius:16px;padding:12px;cursor:pointer;color:var(--texto)}
+  .tema-card[aria-pressed="true"]{border-color:var(--verde);background:var(--t-verde)}
+  .tema-card b{display:block;font-size:15px;font-weight:900;margin:6px 0 2px}
+  .tema-card span{font-size:12px;font-weight:700;color:var(--texto-suave)}
+  .tema-card em{font-style:normal;font-size:20px}
+
+  .niveis{display:flex;gap:8px;margin-bottom:18px}
+  .niveis .chip{flex:1;text-align:center;padding:8px 0}
+
+  .sessao{border:2px solid var(--borda);border-radius:14px;padding:12px;margin-bottom:10px}
+  .sessao b{font-size:15px;font-weight:900}
+  .sessao span{display:block;font-size:12px;font-weight:700;color:var(--cinza);margin-top:2px}
+
+  .vazio{text-align:center;padding:40px 20px;color:var(--cinza);font-weight:700}
+  .vazio strong{display:block;color:var(--texto);font-size:18px;margin-bottom:6px}
+
+  .aviso{display:none;background:var(--superficie)6dc;border:2px solid var(--b-amarelo);color:var(--c-amarelo);border-radius:14px;
+    padding:12px;font-size:14px;font-weight:800;margin-bottom:16px}
+  .aviso.ver{display:block}
+
+  .edicao{display:none;align-items:center;gap:10px;background:var(--t-roxo);border:2px solid var(--b-roxo);
+    color:var(--roxo);border-radius:14px;padding:11px 14px;font-size:14px;font-weight:800;margin-bottom:16px}
+  .edicao.ver{display:flex}
+  .edicao span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .edicao button{font-family:inherit;font-size:13px;font-weight:800;color:var(--roxo);background:var(--superficie);
+    border:2px solid var(--b-roxo);border-radius:10px;padding:6px 10px;cursor:pointer}
+
+  .editar{font-family:inherit;font-size:12px;font-weight:800;padding:6px 12px;border-radius:20px;
+    border:2px solid var(--borda);background:var(--superficie);color:var(--cinza);cursor:pointer}
+
+  .msg{max-width:92%;margin-bottom:12px;padding:12px 14px;border-radius:16px;font-weight:700;font-size:15px}
+  .eu{margin-left:auto;background:var(--azul);color:#fff;border-bottom-right-radius:4px}
+  .ia{background:var(--superficie2);border:2px solid var(--borda);border-bottom-left-radius:4px}
+  .ia h4{margin:12px 0 4px;font-size:13px;font-weight:900;color:var(--azul-escuro)}
+  .ia h4:first-child{margin-top:0}
+  .ia p{margin:0 0 6px}
+  .ia ul{margin:0 0 6px;padding-left:18px}
+  .ia li{margin-bottom:3px}
+  .salvar-sug{margin-top:10px;font-family:inherit;font-size:13px;font-weight:800;color:#fff;
+    background:var(--verde);border:none;border-bottom:3px solid var(--verde-escuro);
+    border-radius:12px;padding:9px 14px;cursor:pointer}
+  .pensando{color:var(--cinza);font-weight:800}
+  .config{border:2px solid var(--borda);border-bottom-width:4px;border-radius:16px;padding:16px;margin-bottom:16px}
+  .config h3{margin:0 0 8px;font-size:17px;font-weight:900}
+  .config p{margin:0 0 10px;font-size:14px;font-weight:700;color:var(--texto-suave)}
+  .config a{color:var(--azul);font-weight:800}
+  .config ol{margin:0 0 12px;padding-left:20px;font-size:14px;font-weight:700;color:var(--texto-suave)}
+
+  .fundo{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:50;display:none}
+  .fundo.ver{display:block}
+  .ficha{position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--superficie);border-top-left-radius:22px;
+    border-top-right-radius:22px;padding:20px 18px calc(22px + env(safe-area-inset-bottom));
+    transform:translateY(100%);transition:transform .2s;max-height:80vh;overflow:auto}
+  .ficha.ver{transform:translateY(0)}
+  .ficha .puxa{width:44px;height:5px;background:var(--borda);border-radius:3px;margin:-8px auto 14px}
+  .ficha h3{margin:0;font-size:24px;font-weight:900;display:flex;align-items:center;gap:8px}
+  .ficha .fsig{margin:8px 0 0;font-size:17px;font-weight:700}
+  .ficha .acoes{margin-top:16px}
+  .fbtn{font-family:inherit;font-size:14px;font-weight:800;border-radius:12px;padding:10px 14px;cursor:pointer;
+    border:2px solid var(--borda);border-bottom-width:4px;background:var(--superficie);color:var(--texto)}
+  .fbtn.ok{background:var(--verde);border-color:var(--verde);border-bottom-color:var(--verde-escuro);color:#fff}
+  .fbtn.perigo{background:var(--vermelho);border-color:var(--vermelho);border-bottom-color:#d33;color:#fff}
+  .ficha .alvo{margin:10px 0 0;font-size:17px;font-weight:800;padding:12px 14px;background:var(--superficie2);border-radius:12px}
+  .ficha .nota{margin:12px 0 0;font-size:14px;font-weight:700;color:var(--texto-suave)}
+  .lista-pastas{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .lista-pastas button{font-family:inherit;font-size:15px;font-weight:800;text-align:left;
+    border:2px solid var(--borda);border-bottom-width:4px;border-radius:14px;padding:12px 14px;background:var(--superficie);
+    color:var(--texto);cursor:pointer}
+
+  #toast{position:fixed;left:16px;right:16px;bottom:100px;z-index:60;background:var(--verde-claro);
+    border:2px solid var(--b-verde);color:var(--c-verde);border-radius:16px;padding:14px 16px;font-weight:800;
+    text-align:center;opacity:0;transform:translateY(12px);transition:opacity .18s,transform .18s;pointer-events:none}
+  #toast.erro{background:var(--t-vermelho);border-color:var(--b-vermelho);color:var(--c-vermelho)}
+  #toast.ver{opacity:1;transform:translateY(0)}
+  .oculto{display:none !important}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="placar">
+    <div class="item fogo"><b id="s-seq">0</b><span>dias seguidos</span></div>
+    <div class="item pal"><b id="s-total">0</b><span>itens</span></div>
+    <div class="item dom"><b id="s-dom">0</b><span>dominadas</span></div>
+  </div>
+  <nav class="abas">
+    <button class="aba ativa" id="ab-add" onclick="troca('add')">Adicionar</button>
+    <button class="aba" id="ab-lista" onclick="troca('lista')">Palavras</button>
+    <button class="aba" id="ab-chat" onclick="troca('chat')">Tirar dúvida</button>
+    <button class="aba" id="ab-pratica" onclick="troca('pratica')">Praticar</button>
+    <button class="tema" id="btn-tema" type="button" onclick="alternarTema()"
+            role="switch" aria-checked="false" aria-label="Modo escuro">
+      <span class="bolinha" id="bolinha-tema">☀️</span>
+    </button>
+  </nav>
+</header>
+
+<main>
+  <!-- ======================= ADICIONAR ======================= -->
+  <section id="tela-add">
+    <h2 class="titulo" id="saudacao">O que você aprendeu hoje?</h2>
+
+    <div class="segmento">
+      <button class="seg" id="seg-palavra" type="button" aria-pressed="true" onclick="tipo('Palavra')">Palavra</button>
+      <button class="seg" id="seg-frase" type="button" aria-pressed="false" onclick="tipo('Frase')">Frase</button>
+    </div>
+
+    <div class="edicao" id="faixa-edicao">
+      <span id="texto-edicao"></span>
+      <button type="button" onclick="cancelarEdicao()">Cancelar</button>
+    </div>
+
+    <div class="aviso" id="aviso"></div>
+
+    <label for="palavra" id="lb-palavra">Palavra em inglês</label>
+    <div class="linha-som">
+      <textarea class="campo" id="palavra" rows="1" placeholder="reliable" autocapitalize="none" spellcheck="false" oninput="valida()"></textarea>
+      <button class="som" id="ouvir-campo" type="button" title="Ouvir" onclick="falar(el('palavra').value, this)" disabled>🔊</button>
+    </div>
+
+    <div id="bloco-pronuncia">
+      <label for="pronuncia">Pronúncia <span class="dica">— do seu jeito ou em fonética</span></label>
+      <input class="campo" id="pronuncia" placeholder="rilaiabol  /rɪˈlaɪəbl/" autocomplete="off" autocapitalize="none" spellcheck="false">
+    </div>
+
+    <label for="significado" id="lb-significado">Significado</label>
+    <input class="campo" id="significado" placeholder="confiável" autocomplete="off" oninput="valida()">
+
+    <div id="bloco-frase">
+      <label for="frase">Frase com a palavra</label>
+      <textarea class="campo" id="frase" placeholder="He is a reliable friend."></textarea>
+    </div>
+
+    <div id="bloco-glossario" class="oculto">
+      <button class="btn btn-leve" id="btn-gloss" type="button" onclick="gerarGlossario()">Explicar palavra por palavra</button>
+      <div id="previa-gloss"></div>
+    </div>
+
+    <label>Biblioteca <span class="dica">— opcional</span></label>
+    <div class="chips" id="chips-bib"></div>
+    <input class="campo oculto" id="nova-bib" placeholder="Nome da nova pasta" autocomplete="off" onkeydown="if(event.key==='Enter')criarBib()">
+  </section>
+
+  <!-- ======================= LISTA ======================= -->
+  <section id="tela-lista" class="oculto">
+    <h2 class="titulo">Suas palavras e frases</h2>
+    <div class="chips" id="filtros"></div>
+    <div id="lista"></div>
+  </section>
+
+  <!-- ======================= CHAT ======================= -->
+  <section id="tela-chat" class="oculto">
+    <div id="config-ia" class="config oculto">
+      <h3>Ligue o Gemini</h3>
+      <p>A conversa e a voz usam a API do Google AI Studio, que tem uso gratuito. A chave fica guardada na sua conta, não na planilha.</p>
+      <ol>
+        <li>Abra <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></li>
+        <li>Toque em criar chave de API e copie</li>
+        <li>Cole abaixo</li>
+      </ol>
+      <input class="campo" id="chave" placeholder="AIza..." autocomplete="off" autocapitalize="none" spellcheck="false">
+      <button class="btn" type="button" onclick="guardarChave()">Salvar chave</button>
+    </div>
+    <div id="mensagens"></div>
+  </section>
+
+  <!-- ======================= PRATICAR ======================= -->
+  <section id="tela-pratica" class="oculto">
+    <h2 class="titulo">Sobre o que você quer conversar?</h2>
+
+    <div id="config-pratica" class="config oculto">
+      <h3>Endereço da sala de voz</h3>
+      <p>A conversa por voz roda numa página sua, fora do Apps Script, porque o Google bloqueia o microfone aqui dentro. Cole o endereço dela.</p>
+      <input class="campo" id="url-pratica" placeholder="https://seuusuario.github.io/pratica.html" autocomplete="off" spellcheck="false">
+      <button class="btn" type="button" onclick="guardarUrlPratica()">Salvar endereço</button>
+    </div>
+
+    <label>Nível</label>
+    <div class="niveis" id="niveis"></div>
+
+    <label>Tema</label>
+    <div class="temas" id="temas"></div>
+
+    <input class="campo" id="tema-livre" placeholder="Ou escreva um tema: entrevista de emprego..." autocomplete="off" oninput="limparTemaCard()">
+
+    <button class="btn" type="button" onclick="abrirPratica()" style="margin-bottom:22px">Começar conversa</button>
+
+    <div id="sessoes"></div>
+  </section>
+</main>
+
+<div class="barra" id="barra-salvar">
+  <button class="btn" id="salvar" onclick="salvar()" disabled>Salvar</button>
+</div>
+
+<div class="barra oculto" id="barra-chat">
+  <div class="linha-chat">
+    <textarea class="campo" id="pergunta" rows="1" placeholder="O que significa reliable?" oninput="validaChat()"></textarea>
+    <button class="enviar" id="btn-enviar" onclick="perguntar()" disabled>➜</button>
+  </div>
+</div>
+
+<div class="fundo" id="fundo" onclick="fecharFicha()"></div>
+<div class="ficha" id="ficha">
+  <div class="puxa"></div>
+  <div id="ficha-corpo"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ------------------------------------------------ estado */
+let dados = {itens:[], bibliotecas:[], temIA:false};
+let abaAtual = 'add';
+let tipoAtual = 'Palavra';
+let bibSel = '';
+let filtro = '';
+let glossarioNovo = [];
+let editando = null;        // linha da planilha em edição, ou null
+let repetidaOk = false, enviando = false;
+let historico = [];
+const temVoz = 'speechSynthesis' in window;
+
+/* áudio */
+const audioGuardado = {};   // texto -> base64 do wav
+let tocadorAtual = null;
+let avisouVoz = false;
+
+function el(id){ return document.getElementById(id); }
+
+/* ------------------------------------------------ tema */
+let temaAtual = 'claro';
+
+function aplicarTema(t){
+  temaAtual = (t === 'escuro') ? 'escuro' : 'claro';
+  const escuro = temaAtual === 'escuro';
+  document.body.classList.toggle('escuro', escuro);
+  const b = el('btn-tema');
+  if (b) b.setAttribute('aria-checked', escuro ? 'true' : 'false');
+  const bolinha = el('bolinha-tema');
+  if (bolinha) bolinha.textContent = escuro ? '🌙' : '☀️';
+}
+
+function temaGuardado(){
+  try { return localStorage.getItem('tema') || ''; } catch (e) { return ''; }
+}
+
+function alternarTema(){
+  const novo = temaAtual === 'escuro' ? 'claro' : 'escuro';
+  aplicarTema(novo);
+  try { localStorage.setItem('tema', novo); } catch (e) { /* sem localStorage, tudo bem */ }
+  google.script.run.salvarTema(novo); // lembra também em outros aparelhos
+}
+
+// escolhe antes de tudo para não piscar branco: o que você escolheu,
+// ou o modo do próprio celular na primeira vez
+(function(){
+  const guardado = temaGuardado();
+  if (guardado) aplicarTema(guardado);
+  else if (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) aplicarTema('escuro');
+  setTimeout(function(){ document.body.classList.add('anima'); }, 120);
+})();
+
+function esc(t){ const d = document.createElement('div'); d.textContent = t == null ? '' : t; return d.innerHTML; }
+
+/* ------------------------------------------------ voz */
+function vozDoCelular(texto){
+  if (!temVoz) return;
+  speechSynthesis.cancel();
+  const f = new SpeechSynthesisUtterance(texto);
+  f.lang = 'en-US'; f.rate = 0.9;
+  const voz = speechSynthesis.getVoices().filter(function(v){ return /^en/i.test(v.lang); })[0];
+  if (voz) f.voice = voz;
+  speechSynthesis.speak(f);
+}
+if (temVoz) speechSynthesis.getVoices();
+
+function tocar(base64){
+  if (tocadorAtual){ tocadorAtual.pause(); tocadorAtual = null; }
+  tocadorAtual = new Audio('data:audio/wav;base64,' + base64);
+  tocadorAtual.play().catch(function(){ /* o navegador recusou: ignora */ });
+}
+
+function carregando(botao, ligar){
+  if (!botao) return;
+  if (ligar){
+    botao.dataset.antes = botao.textContent;
+    botao.textContent = '•••';
+    botao.disabled = true;
+  } else {
+    botao.textContent = botao.dataset.antes || '🔊';
+    botao.disabled = false;
+  }
+}
+
+/** Lê o texto com a voz do Gemini; se falhar, usa a voz do celular. */
+function falar(texto, botao){
+  const t = String(texto || '').trim();
+  if (!t) return;
+  if (speechSynthesis && speechSynthesis.speaking) speechSynthesis.cancel();
+
+  if (audioGuardado[t]){ tocar(audioGuardado[t]); return; }
+  if (!dados.temIA){ vozDoCelular(t); return; }
+
+  carregando(botao, true);
+  google.script.run
+    .withSuccessHandler(function(r){
+      carregando(botao, false);
+      if (r && r.audio){ audioGuardado[t] = r.audio; tocar(r.audio); }
+      else vozDoCelular(t);
+    })
+    .withFailureHandler(function(){
+      carregando(botao, false);
+      if (!avisouVoz){ avisouVoz = true; toast('Voz do Gemini indisponível agora, usando a do celular.'); }
+      vozDoCelular(t);
+    })
+    .falarIA(t, '');
+}
+
+/* ------------------------------------------------ navegação */
+function troca(a){
+  abaAtual = a;
+  el('tela-add').classList.toggle('oculto', a !== 'add');
+  el('tela-lista').classList.toggle('oculto', a !== 'lista');
+  el('tela-chat').classList.toggle('oculto', a !== 'chat');
+  el('tela-pratica').classList.toggle('oculto', a !== 'pratica');
+  el('ab-add').classList.toggle('ativa', a === 'add');
+  el('ab-lista').classList.toggle('ativa', a === 'lista');
+  el('ab-chat').classList.toggle('ativa', a === 'chat');
+  el('ab-pratica').classList.toggle('ativa', a === 'pratica');
+  if (a === 'pratica') el('config-pratica').classList.toggle('oculto', !!dados.urlPratica);
+  el('barra-salvar').classList.toggle('oculto', a !== 'add');
+  el('barra-chat').classList.toggle('oculto', a !== 'chat');
+  if (a === 'chat') { el('config-ia').classList.toggle('oculto', !!dados.temIA); setTimeout(fimDoChat, 60); }
+  else window.scrollTo(0,0);
+}
+
+function tipo(t){
+  tipoAtual = t;
+  glossarioNovo = [];
+  el('previa-gloss').innerHTML = '';
+  el('seg-palavra').setAttribute('aria-pressed', t === 'Palavra' ? 'true' : 'false');
+  el('seg-frase').setAttribute('aria-pressed', t === 'Frase' ? 'true' : 'false');
+
+  const frase = t === 'Frase';
+  el('lb-palavra').textContent = frase ? 'Frase em inglês' : 'Palavra em inglês';
+  el('palavra').placeholder = frase ? 'How have you been?' : 'reliable';
+  el('palavra').rows = frase ? 2 : 1;
+  el('lb-significado').textContent = frase ? 'Tradução da frase' : 'Significado';
+  el('significado').placeholder = frase ? 'Como você tem passado?' : 'confiável';
+  el('bloco-pronuncia').classList.toggle('oculto', frase);
+  el('bloco-frase').classList.toggle('oculto', frase);
+  el('bloco-glossario').classList.toggle('oculto', !frase);
+  el('saudacao').textContent = frase ? 'Qual frase você quer guardar?' : 'Qual palavra você aprendeu hoje?';
+  valida();
+}
+
+/* ------------------------------------------------ formulário */
+function valida(){
+  const texto = el('palavra').value.trim();
+  const ok = texto && el('significado').value.trim();
+  el('salvar').disabled = !ok || enviando;
+  el('salvar').textContent = enviando
+    ? 'Salvando...'
+    : (editando ? 'Salvar alterações' : (tipoAtual === 'Frase' ? 'Salvar frase' : 'Salvar palavra'));
+  el('ouvir-campo').disabled = !texto;
+  el('btn-gloss').disabled = !texto || !dados.temIA;
+  if (repetidaOk) { repetidaOk = false; el('aviso').classList.remove('ver'); }
+}
+
+function pintaBibliotecas(){
+  const c = el('chips-bib');
+  c.innerHTML = '';
+  const nomes = dados.bibliotecas.map(function(b){ return b.nome; });
+  if (bibSel && nomes.indexOf(bibSel) === -1) nomes.push(bibSel);
+  nomes.forEach(function(n){
+    const b = document.createElement('button');
+    b.className = 'chip'; b.type = 'button'; b.textContent = n;
+    b.setAttribute('aria-pressed', n === bibSel ? 'true' : 'false');
+    b.onclick = function(){ bibSel = (bibSel === n) ? '' : n; pintaBibliotecas(); };
+    c.appendChild(b);
+  });
+  const nova = document.createElement('button');
+  nova.className = 'chip nova'; nova.type = 'button'; nova.textContent = '+ nova pasta';
+  nova.onclick = function(){
+    const campo = el('nova-bib');
+    campo.classList.remove('oculto');
+    campo.focus();
+  };
+  c.appendChild(nova);
+}
+
+function criarBib(){
+  const campo = el('nova-bib');
+  const nome = campo.value.trim();
+  if (!nome) return;
+  bibSel = nome;
+  campo.value = '';
+  campo.classList.add('oculto');
+  pintaBibliotecas();
+}
+
+function gerarGlossario(){
+  const frase = el('palavra').value.trim();
+  if (!frase) return;
+  el('btn-gloss').disabled = true;
+  el('btn-gloss').textContent = 'Consultando o Gemini...';
+  google.script.run
+    .withSuccessHandler(function(g){
+      glossarioNovo = g || [];
+      el('btn-gloss').textContent = 'Explicar palavra por palavra';
+      el('btn-gloss').disabled = false;
+      const alvo = el('previa-gloss');
+      alvo.innerHTML = '';
+      if (!glossarioNovo.length){ toast('O Gemini não conseguiu separar essa frase.', true); return; }
+      const caixa = document.createElement('div');
+      caixa.className = 'frase';
+      glossarioNovo.forEach(function(o){
+        const l = document.createElement('div');
+        l.innerHTML = '<strong>' + esc(o.p) + '</strong> — ' + esc(o.s);
+        caixa.appendChild(l);
+      });
+      alvo.appendChild(caixa);
+      toast('Prontinho. Isso vai junto com a frase.');
+    })
+    .withFailureHandler(function(e){
+      el('btn-gloss').textContent = 'Explicar palavra por palavra';
+      el('btn-gloss').disabled = false;
+      toast(e.message || 'Não deu para consultar.', true);
+    })
+    .glossarioIA(frase);
+}
+
+function limparForm(){
+  el('palavra').value = '';
+  el('pronuncia').value = '';
+  el('significado').value = '';
+  el('frase').value = '';
+  el('previa-gloss').innerHTML = '';
+  el('aviso').classList.remove('ver');
+  glossarioNovo = [];
+}
+
+/** Abre o item no formulário para alterar o que já está salvo. */
+function iniciarEdicao(p){
+  troca('add');
+  tipo(p.tipo === 'Frase' ? 'Frase' : 'Palavra');
+  editando = p.linha;
+  el('palavra').value = p.palavra || '';
+  el('pronuncia').value = p.pronuncia || '';
+  el('significado').value = p.significado || '';
+  el('frase').value = p.frase || '';
+  glossarioNovo = p.glossario || [];
+  bibSel = p.biblioteca || '';
+  pintaBibliotecas();
+  el('texto-edicao').textContent = 'Editando: ' + (p.palavra || '');
+  el('faixa-edicao').classList.add('ver');
+  valida();
+  window.scrollTo(0,0);
+}
+
+function cancelarEdicao(){
+  editando = null;
+  bibSel = '';
+  limparForm();
+  pintaBibliotecas();
+  el('faixa-edicao').classList.remove('ver');
+  valida();
+}
+
+function salvar(){
+  enviando = true;
+  el('salvar').disabled = true;
+  el('salvar').textContent = 'Salvando...';
+
+  const conteudo = {
+    tipo: tipoAtual,
+    palavra: el('palavra').value,
+    pronuncia: el('pronuncia').value,
+    significado: el('significado').value,
+    frase: el('frase').value,
+    biblioteca: bibSel,
+    glossario: glossarioNovo,
+    status: 'Novo',
+    confirmarRepetida: repetidaOk
+  };
+
+  if (editando){
+    const linha = editando;
+    google.script.run
+      .withSuccessHandler(function(r){
+        enviando = false;
+        editando = null;
+        bibSel = '';
+        limparForm();
+        el('faixa-edicao').classList.remove('ver');
+        pinta(r);
+        valida();
+        toast('Alterações salvas.');
+        troca('lista');
+      })
+      .withFailureHandler(function(e){
+        enviando = false;
+        valida();
+        el('salvar').disabled = false;
+        toast(e.message || 'Não deu para salvar as alterações.', true);
+      })
+      .editarItem(linha, conteudo);
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(r){
+      enviando = false;
+      if (r && r.repetida){
+        repetidaOk = true;
+        const a = el('aviso');
+        a.textContent = r.mensagem + ' Toque em salvar de novo para registrar mesmo assim.';
+        a.classList.add('ver');
+        valida();
+        el('salvar').disabled = false;
+        return;
+      }
+      limparForm();
+      pinta(r);
+      valida();
+      toast(tipoAtual === 'Frase' ? 'Frase salva.' : 'Palavra salva. Você já tem ' + r.total + '!');
+    })
+    .withFailureHandler(function(e){
+      enviando = false;
+      valida();
+      el('salvar').disabled = false;
+      toast(e.message || 'Não deu para salvar. Tente de novo.', true);
+    })
+    .salvarItem(conteudo);
+}
+
+/* ------------------------------------------------ lista */
+function proximoStatus(s){
+  return s === 'Novo' ? 'Revisando' : (s === 'Revisando' ? 'Dominado' : 'Novo');
+}
+
+function mudarStatus(linha, atual, botao){
+  const novo = proximoStatus(atual);
+  botao.className = 'selo ' + novo;
+  botao.textContent = novo;
+  botao.onclick = function(){ mudarStatus(linha, novo, botao); };
+  google.script.run
+    .withSuccessHandler(function(r){ dados = r; atualizaPlacar(r); })
+    .withFailureHandler(function(){ toast('Não deu para atualizar.', true); })
+    .atualizarStatus(linha, novo);
+}
+
+/** Pergunta antes de apagar, na mesma gaveta das outras ações. */
+function confirmarExclusao(p){
+  abrirSheet(
+    '<h3>Remover da lista?</h3>' +
+    '<p class="alvo" id="alvo-excluir"></p>' +
+    '<p class="nota">A linha sai da planilha e não dá para desfazer.</p>' +
+    '<div class="acoes">' +
+      '<button class="fbtn perigo" type="button" id="btn-excluir">Sim, remover</button>' +
+      '<button class="fbtn" type="button" onclick="fecharFicha()">Cancelar</button>' +
+    '</div>'
+  );
+  el('alvo-excluir').textContent = p.palavra || '';
+  el('btn-excluir').onclick = function(){
+    const b = el('btn-excluir');
+    b.textContent = 'Removendo...';
+    b.disabled = true;
+    excluir(p.linha);
+  };
+}
+
+function excluir(linha){
+  google.script.run
+    .withSuccessHandler(function(r){
+      fecharFicha();
+      if (editando === linha) cancelarEdicao();
+      pinta(r);
+      toast('Removido.');
+    })
+    .withFailureHandler(function(){
+      fecharFicha();
+      toast('Não deu para remover.', true);
+    })
+    .excluirItem(linha);
+}
+
+/** Monta um texto com cada palavra clicável. */
+function montarTexto(texto, glossario, contexto){
+  const frag = document.createDocumentFragment();
+  String(texto).split(/(\s+)/).forEach(function(pedaco){
+    if (!pedaco) return;
+    const limpa = pedaco.replace(/[^A-Za-zÀ-ÿ'’-]/g, '');
+    if (!limpa){ frag.appendChild(document.createTextNode(pedaco)); return; }
+    const b = document.createElement('button');
+    b.className = 'tok'; b.type = 'button'; b.textContent = pedaco;
+    const achou = (glossario || []).filter(function(o){
+      return String(o.p).toLowerCase().replace(/[^a-zà-ÿ'’-]/g,'') === limpa.toLowerCase();
+    })[0];
+    if (achou && achou.s) b.title = achou.s;
+    b.onclick = function(){ abrirFicha(limpa, contexto, achou ? achou.s : ''); };
+    frag.appendChild(b);
+  });
+  return frag;
+}
+
+function pintaFiltros(){
+  const c = el('filtros');
+  c.innerHTML = '';
+  const opcoes = [{nome:'', rotulo:'Tudo'}];
+  dados.bibliotecas.forEach(function(b){ opcoes.push({nome:b.nome, rotulo:b.nome + ' · ' + b.qtd}); });
+  opcoes.push({nome:'__sem__', rotulo:'Sem pasta'});
+  opcoes.forEach(function(o){
+    const b = document.createElement('button');
+    b.className = 'chip'; b.type = 'button'; b.textContent = o.rotulo;
+    b.setAttribute('aria-pressed', filtro === o.nome ? 'true' : 'false');
+    b.onclick = function(){ filtro = o.nome; pintaFiltros(); pintaLista(); };
+    c.appendChild(b);
+  });
+}
+
+function pintaLista(){
+  const lista = el('lista');
+  lista.innerHTML = '';
+  const itens = (dados.itens || []).filter(function(p){
+    if (filtro === '') return true;
+    if (filtro === '__sem__') return !p.biblioteca;
+    return p.biblioteca === filtro;
+  });
+
+  if (!itens.length){
+    lista.innerHTML = '<div class="vazio"><strong>Nada por aqui ainda</strong>Adicione uma palavra ou frase na aba Adicionar.</div>';
+    return;
+  }
+
+  itens.forEach(function(p){
+    const c = document.createElement('article');
+    c.className = 'cartao';
+    const ehFrase = p.tipo === 'Frase';
+
+    const cab = document.createElement('div');
+    cab.className = 'cab';
+    const h = document.createElement('h3');
+    if (ehFrase){
+      h.style.fontSize = '17px';
+      h.appendChild(montarTexto(p.palavra, p.glossario, p.palavra));
+    } else {
+      h.textContent = p.palavra;
+    }
+    cab.appendChild(h);
+
+    const ouvir = document.createElement('button');
+    ouvir.className = 'ouvir'; ouvir.type = 'button'; ouvir.textContent = '🔊'; ouvir.title = 'Ouvir';
+    ouvir.onclick = function(){ falar(p.palavra, ouvir); };
+    cab.appendChild(ouvir);
+
+    const dt = document.createElement('span'); dt.className = 'data'; dt.textContent = p.dataBr;
+    cab.appendChild(dt);
+    c.appendChild(cab);
+
+    if (p.pronuncia){
+      const f = document.createElement('p'); f.className = 'fon'; f.textContent = p.pronuncia;
+      c.appendChild(f);
+    }
+
+    const sig = document.createElement('p');
+    sig.className = ehFrase ? 'traducao' : 'sig';
+    sig.textContent = p.significado;
+    c.appendChild(sig);
+
+    if (p.frase){
+      const fr = document.createElement('p'); fr.className = 'frase';
+      fr.appendChild(montarTexto(p.frase, p.glossario, p.frase));
+      const ouvirFrase = document.createElement('button');
+      ouvirFrase.className = 'ouvir'; ouvirFrase.type = 'button'; ouvirFrase.textContent = '🔊';
+      ouvirFrase.title = 'Ouvir a frase';
+      ouvirFrase.onclick = function(){ falar(p.frase, ouvirFrase); };
+      fr.appendChild(ouvirFrase);
+      c.appendChild(fr);
+    }
+
+    const ac = document.createElement('div'); ac.className = 'acoes';
+    const st = document.createElement('button');
+    st.className = 'selo ' + p.status; st.textContent = p.status;
+    st.onclick = function(){ mudarStatus(p.linha, p.status, st); };
+    ac.appendChild(st);
+
+    const lapis = document.createElement('button');
+    lapis.className = 'editar'; lapis.type = 'button'; lapis.textContent = '✎ editar';
+    lapis.onclick = function(){ iniciarEdicao(p); };
+    ac.appendChild(lapis);
+
+    const pasta = document.createElement('button');
+    pasta.className = 'pasta' + (p.biblioteca ? ' tem' : '');
+    pasta.textContent = p.biblioteca ? '📁 ' + p.biblioteca : '📁 pasta';
+    pasta.onclick = function(){ escolherPasta(p); };
+    ac.appendChild(pasta);
+
+    const lx = document.createElement('button');
+    lx.className = 'lixo'; lx.textContent = '✕'; lx.title = 'Remover';
+    lx.onclick = function(){ confirmarExclusao(p); };
+    ac.appendChild(lx);
+
+    c.appendChild(ac);
+    lista.appendChild(c);
+  });
+}
+
+/* ------------------------------------------------ ficha (popup) */
+function abrirSheet(html){
+  el('ficha-corpo').innerHTML = html;
+  el('fundo').classList.add('ver');
+  el('ficha').classList.add('ver');
+}
+function fecharFicha(){
+  el('fundo').classList.remove('ver');
+  el('ficha').classList.remove('ver');
+}
+
+function abrirFicha(palavra, contexto, significado){
+  abrirSheet(
+    '<h3 id="f-topo"></h3>' +
+    '<p class="fsig" id="f-sig">' + (significado ? esc(significado) : '<span class="pensando">procurando o significado...</span>') + '</p>' +
+    '<div class="acoes">' +
+      '<button class="fbtn ok" type="button" onclick="levarParaForm()">Adicionar ao meu vocabulário</button>' +
+      '<button class="fbtn" type="button" onclick="fecharFicha()">Fechar</button>' +
+    '</div>'
+  );
+
+  const topo = el('f-topo');
+  topo.textContent = palavra;
+  const ouvir = document.createElement('button');
+  ouvir.className = 'ouvir'; ouvir.type = 'button'; ouvir.textContent = '🔊';
+  ouvir.onclick = function(){ falar(palavra, ouvir); };
+  topo.appendChild(ouvir);
+
+  window._ficha = {palavra: palavra, significado: significado || ''};
+
+  if (!significado){
+    if (!dados.temIA){
+      const salva = (dados.itens || []).filter(function(i){
+        return i.tipo === 'Palavra' && i.palavra.toLowerCase() === palavra.toLowerCase();
+      })[0];
+      el('f-sig').textContent = salva ? salva.significado : 'Ligue o Gemini na aba Conversar para ver o significado.';
+      if (salva) window._ficha.significado = salva.significado;
+      return;
+    }
+    google.script.run
+      .withSuccessHandler(function(s){
+        window._ficha.significado = s;
+        const alvo = el('f-sig');
+        if (alvo) alvo.textContent = s;
+      })
+      .withFailureHandler(function(e){
+        const alvo = el('f-sig');
+        if (alvo) alvo.textContent = e.message || 'Não consegui buscar agora.';
+      })
+      .significadoRapido(palavra, contexto || '');
+  }
+}
+
+function levarParaForm(){
+  const f = window._ficha || {};
+  fecharFicha();
+  troca('add');
+  tipo('Palavra');
+  el('palavra').value = f.palavra || '';
+  el('significado').value = f.significado || '';
+  el('pronuncia').value = '';
+  valida();
+  el('palavra').scrollIntoView({block:'center'});
+}
+
+function escolherPasta(item){
+  let html = '<h3>Guardar em</h3><div class="lista-pastas">';
+  html += '<button type="button" onclick="mover(' + item.linha + ', \'\')">Sem pasta</button>';
+  dados.bibliotecas.forEach(function(b){
+    html += '<button type="button" onclick="mover(' + item.linha + ', ' + JSON.stringify(b.nome).replace(/"/g,'&quot;') + ')">📁 ' + esc(b.nome) + '</button>';
+  });
+  html += '</div>' +
+    '<input class="campo" id="pasta-nova" placeholder="Criar nova pasta" style="margin-top:14px">' +
+    '<div class="acoes">' +
+      '<button class="fbtn ok" type="button" onclick="mover(' + item.linha + ', el(\'pasta-nova\').value)">Criar e guardar</button>' +
+      '<button class="fbtn" type="button" onclick="fecharFicha()">Cancelar</button>' +
+    '</div>';
+  abrirSheet(html);
+}
+
+function mover(linha, nome){
+  fecharFicha();
+  google.script.run
+    .withSuccessHandler(function(r){ pinta(r); toast(nome ? 'Guardado em ' + nome + '.' : 'Tirado da pasta.'); })
+    .withFailureHandler(function(){ toast('Não deu para mover.', true); })
+    .moverBiblioteca(linha, nome || '');
+}
+
+/* ------------------------------------------------ chat */
+function validaChat(){
+  el('btn-enviar').disabled = !el('pergunta').value.trim();
+}
+
+function fimDoChat(){ window.scrollTo(0, document.body.scrollHeight); }
+
+function balao(classe, conteudoHtml){
+  const d = document.createElement('div');
+  d.className = 'msg ' + classe;
+  d.innerHTML = conteudoHtml;
+  el('mensagens').appendChild(d);
+  fimDoChat();
+  return d;
+}
+
+/** Converte a resposta do Gemini (## título, **negrito**, - lista) em HTML. */
+function formata(texto){
+  const linhas = String(texto).split('\n');
+  let html = '', emLista = false;
+  linhas.forEach(function(l){
+    const t = l.trim();
+    if (!t){ if (emLista){ html += '</ul>'; emLista = false; } return; }
+    const neg = esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    if (t.indexOf('## ') === 0){
+      if (emLista){ html += '</ul>'; emLista = false; }
+      html += '<h4>' + neg.replace(/^##\s*/, '') + '</h4>';
+    } else if (t.indexOf('- ') === 0 || t.indexOf('* ') === 0){
+      if (!emLista){ html += '<ul>'; emLista = true; }
+      html += '<li>' + neg.replace(/^[-*]\s*/, '') + '</li>';
+    } else {
+      if (emLista){ html += '</ul>'; emLista = false; }
+      html += '<p>' + neg + '</p>';
+    }
+  });
+  if (emLista) html += '</ul>';
+  return html;
+}
+
+function perguntar(){
+  const p = el('pergunta').value.trim();
+  if (!p) return;
+  if (!dados.temIA){ troca('chat'); toast('Cole sua chave do Gemini primeiro.', true); return; }
+
+  balao('eu', esc(p));
+  historico.push({autor:'eu', texto:p});
+  el('pergunta').value = '';
+  validaChat();
+  el('btn-enviar').disabled = true;
+  const esperando = balao('ia', '<span class="pensando">pensando...</span>');
+
+  google.script.run
+    .withSuccessHandler(function(resposta){
+      const sugestao = (resposta.match(/^SALVAR:\s*(.+)$/m) || [])[1];
+      const limpo = resposta.replace(/^SALVAR:.*$/m, '').trim();
+      historico.push({autor:'ia', texto:limpo});
+      esperando.innerHTML = formata(limpo);
+
+      if (sugestao){
+        const campos = sugestao.split('|').map(function(x){ return x.trim(); });
+        const ouvir = document.createElement('button');
+        ouvir.className = 'ouvir'; ouvir.type = 'button'; ouvir.textContent = '🔊';
+        ouvir.title = 'Ouvir'; ouvir.style.fontSize = '20px';
+        ouvir.onclick = function(){ falar(campos[0], ouvir); };
+        esperando.appendChild(ouvir);
+
+        const b = document.createElement('button');
+        b.className = 'salvar-sug'; b.type = 'button';
+        b.textContent = '+ Salvar "' + campos[0] + '"';
+        b.onclick = function(){
+          troca('add'); tipo('Palavra');
+          el('palavra').value = campos[0] || '';
+          el('pronuncia').value = campos[1] || '';
+          el('significado').value = campos[2] || '';
+          el('frase').value = campos[3] || '';
+          valida();
+          toast('Confira e toque em salvar.');
+        };
+        esperando.appendChild(b);
+      }
+      validaChat();
+      fimDoChat();
+    })
+    .withFailureHandler(function(e){
+      esperando.innerHTML = '<span class="pensando">' + esc(e.message || 'Não consegui responder agora.') + '</span>';
+      validaChat();
+    })
+    .perguntarIA(p, historico.slice(0, -1));
+}
+
+function guardarChave(){
+  const c = el('chave').value.trim();
+  if (!c) return;
+  google.script.run
+    .withSuccessHandler(function(r){
+      dados = r;
+      el('chave').value = '';
+      el('config-ia').classList.add('oculto');
+      valida();
+      toast('Gemini ligado. Pode perguntar.');
+    })
+    .withFailureHandler(function(e){ toast(e.message || 'Chave não aceita.', true); })
+    .salvarChaveIA(c);
+}
+
+/* ------------------------------------------------ praticar */
+const TEMAS = [
+  {e:'✈️', t:'Viagens',         d:'Aeroporto, hotel, pedir informação'},
+  {e:'🍳', t:'Culinária',       d:'Restaurante, receitas, ingredientes'},
+  {e:'☀️', t:'Sobre o dia',     d:'Rotina, planos, como foi seu dia'},
+  {e:'💼', t:'Trabalho',        d:'Reunião, entrevista, e-mail'},
+  {e:'🎨', t:'Arte e Cultura',  d:'Música, livros, tradições'},
+  {e:'⚽', t:'Esportes',        d:'Treino, jogos, academia'},
+  {e:'🎬', t:'Filmes e Séries', d:'Enredo, opiniões, atores'}
+];
+const NIVEIS = ['A1','A2','B1','B2','C1'];
+let temaSel = '', nivelSel = 'A2';
+
+function pintaPratica(){
+  const n = el('niveis');
+  n.innerHTML = '';
+  NIVEIS.forEach(function(v){
+    const b = document.createElement('button');
+    b.className = 'chip'; b.type = 'button'; b.textContent = v;
+    b.setAttribute('aria-pressed', v === nivelSel ? 'true' : 'false');
+    b.onclick = function(){ nivelSel = v; pintaPratica(); };
+    n.appendChild(b);
+  });
+
+  const g = el('temas');
+  g.innerHTML = '';
+  TEMAS.forEach(function(t){
+    const b = document.createElement('button');
+    b.className = 'tema-card'; b.type = 'button';
+    b.setAttribute('aria-pressed', t.t === temaSel ? 'true' : 'false');
+    b.innerHTML = '<em>' + t.e + '</em><b>' + esc(t.t) + '</b><span>' + esc(t.d) + '</span>';
+    b.onclick = function(){
+      temaSel = (temaSel === t.t) ? '' : t.t;
+      el('tema-livre').value = '';
+      pintaPratica();
+    };
+    g.appendChild(b);
+  });
+
+  const s = el('sessoes');
+  s.innerHTML = '';
+  if (dados.sessoes && dados.sessoes.length){
+    const h = document.createElement('label');
+    h.textContent = 'Conversas anteriores';
+    s.appendChild(h);
+    dados.sessoes.forEach(function(c){
+      const d = document.createElement('div');
+      d.className = 'sessao';
+      d.innerHTML = '<b>' + esc(c.tema) + '</b><span>' + esc(c.dataBr) + ' · nível ' + esc(c.nivel) +
+                    ' · ' + esc(String(c.minutos)) + ' min</span>';
+      s.appendChild(d);
+    });
+  }
+}
+
+function limparTemaCard(){
+  if (el('tema-livre').value.trim() && temaSel){ temaSel = ''; pintaPratica(); }
+}
+
+function guardarUrlPratica(){
+  const u = el('url-pratica').value.trim();
+  if (!u) return;
+  google.script.run
+    .withSuccessHandler(function(r){
+      dados = r;
+      el('config-pratica').classList.add('oculto');
+      toast('Endereço salvo.');
+    })
+    .withFailureHandler(function(e){ toast(e.message || 'Endereço inválido.', true); })
+    .salvarUrlPratica(u);
+}
+
+function abrirPratica(){
+  if (!dados.temIA){ toast('Configure a chave do Gemini na aba Tirar dúvida.', true); return; }
+  if (!dados.urlPratica){ el('config-pratica').classList.remove('oculto'); toast('Falta o endereço da sala de voz.', true); return; }
+
+  const tema = el('tema-livre').value.trim() || temaSel;
+  if (!tema){ toast('Escolha um tema ou escreva o seu.', true); return; }
+
+  google.script.run
+    .withSuccessHandler(function(cfg){
+      cfg.tema = tema;
+      cfg.nivel = nivelSel;
+      cfg.escuro = temaAtual === 'escuro';
+      const pacote = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+      window.open(dados.urlPratica + '#' + pacote, 'pratica', 'width=460,height=720');
+    })
+    .withFailureHandler(function(e){ toast(e.message || 'Não deu para abrir.', true); })
+    .dadosDaPratica();
+}
+
+// a sala de voz devolve a transcrição quando você encerra
+window.addEventListener('message', function(ev){
+  const m = ev.data;
+  if (!m || m.origem !== 'pratica') return;
+  if (dados.urlPratica && dados.urlPratica.indexOf(ev.origin) !== 0) return;
+  google.script.run
+    .withSuccessHandler(function(r){ pinta(r); toast('Conversa salva no histórico.'); })
+    .withFailureHandler(function(){ toast('Não deu para salvar a conversa.', true); })
+    .salvarSessao(m);
+});
+
+/* ------------------------------------------------ geral */
+function toast(msg, erro){
+  const t = el('toast');
+  t.textContent = msg;
+  t.classList.toggle('erro', !!erro);
+  t.classList.add('ver');
+  clearTimeout(t._id);
+  t._id = setTimeout(function(){ t.classList.remove('ver'); }, 2800);
+}
+
+function atualizaPlacar(d){
+  el('s-seq').textContent = d.sequencia || 0;
+  el('s-total').textContent = d.total || 0;
+  el('s-dom').textContent = d.dominadas || 0;
+}
+
+function pinta(d){
+  dados = d;
+  if (d.tema && !temaGuardado()) aplicarTema(d.tema);
+  atualizaPlacar(d);
+  pintaBibliotecas();
+  pintaFiltros();
+  pintaLista();
+  pintaPratica();
+  el('config-ia').classList.toggle('oculto', !!d.temIA || abaAtual !== 'chat');
+  valida();
+}
+
+google.script.run
+  .withSuccessHandler(pinta)
+  .withFailureHandler(function(){ toast('Não consegui carregar a planilha.', true); })
+  .carregarDados();
+</script>
+</body>
+</html>

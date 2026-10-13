@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Praticar inglês</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde:#58cc02; --verde-escuro:#4aa802; --azul:#1cb0f6; --vermelho:#ff4b4b;
+    --superficie:#fff; --superficie2:#f7f7f7; --texto:#3c3c3c; --cinza:#afafaf; --borda:#e5e5e5;
+  }
+  body.escuro{
+    --superficie:#181b20; --superficie2:#20242b; --texto:#e9ecef; --cinza:#79818b; --borda:#2c323a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Nunito',-apple-system,sans-serif;background:var(--superficie);
+    color:var(--texto);font-weight:700;display:flex;flex-direction:column;height:100vh;height:100dvh}
+  header{padding:16px;border-bottom:2px solid var(--borda);text-align:center}
+  header h1{margin:0;font-size:17px;font-weight:900}
+  header p{margin:4px 0 0;font-size:13px;color:var(--cinza)}
+  #estado{margin-top:6px;font-size:13px;font-weight:800;color:var(--azul)}
+
+  main{flex:1;overflow:auto;padding:16px}
+  .fala{max-width:88%;margin-bottom:10px;padding:10px 13px;border-radius:16px;font-size:15px}
+  .minha{margin-left:auto;background:var(--azul);color:#fff;border-bottom-right-radius:4px}
+  .dele{background:var(--superficie2);border:2px solid var(--borda);border-bottom-left-radius:4px}
+  .vazio{text-align:center;color:var(--cinza);padding:30px 10px;font-size:14px}
+
+  footer{padding:14px 16px calc(16px + env(safe-area-inset-bottom));border-top:2px solid var(--borda);
+    display:flex;gap:10px;align-items:center}
+  button{font-family:inherit;font-weight:800;border-radius:16px;cursor:pointer;border:none}
+  .mic{flex:1;padding:16px;font-size:16px;color:#fff;background:var(--verde);
+    border-bottom:4px solid var(--verde-escuro);text-transform:uppercase;letter-spacing:.4px}
+  .mic.mudo{background:var(--cinza);border-bottom-color:#888}
+  .sair{padding:16px;font-size:15px;background:var(--superficie2);color:var(--vermelho);
+    border:2px solid var(--borda);border-bottom-width:4px}
+  button:active{transform:translateY(2px)}
+  button[disabled]{opacity:.5;transform:none}
+
+  .onda{display:flex;gap:3px;align-items:flex-end;height:18px;justify-content:center;margin-top:8px}
+  .onda i{width:3px;background:var(--verde);border-radius:2px;height:4px;animation:pulsa .9s infinite ease-in-out}
+  .onda i:nth-child(2){animation-delay:.15s} .onda i:nth-child(3){animation-delay:.3s}
+  .onda i:nth-child(4){animation-delay:.45s} .onda i:nth-child(5){animation-delay:.6s}
+  @keyframes pulsa{0%,100%{height:4px}50%{height:16px}}
+  .oculto{display:none !important}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="tema">Praticar inglês</h1>
+  <p id="nivel"></p>
+  <div id="estado">conectando...</div>
+  <div class="onda oculto" id="onda"><i></i><i></i><i></i><i></i><i></i></div>
+</header>
+
+<main id="conversa">
+  <div class="vazio" id="instrucao">Fale normalmente. O Gemini escuta e responde em voz alta.</div>
+</main>
+
+<footer>
+  <button class="mic" id="btn-mic" onclick="alternarMudo()" disabled>Conectando</button>
+  <button class="sair" onclick="encerrar()">Encerrar</button>
+</footer>
+
+<script>
+const WS = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=';
+const MODELOS = [
+  'gemini-3.8-live',
+  'gemini-3.1-flash-live-preview',
+  'gemini-2.5-flash-native-audio-preview-12-2025',
+  'gemini-2.5-flash-native-audio-preview-09-2025'
+];
+
+let cfg = {}, ws = null, aberto = false, mudo = false, tentativa = 0;
+let ctxEntrada = null, ctxSaida = null, trilha = null, proximoSom = 0;
+const fontes = [];
+const transcricao = [];
+let parcialMeu = '', parcialDele = '', balaoMeu = null, balaoDele = null;
+
+function el(id){ return document.getElementById(id); }
+function estado(t){ el('estado').textContent = t; }
+
+// configuração chega pelo # da URL, que não trafega para servidor nenhum
+try {
+  cfg = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
+} catch (e) {
+  estado('Configuração inválida. Abra pelo app.');
+}
+if (cfg.tema) el('tema').textContent = cfg.tema;
+if (cfg.nivel) el('nivel').textContent = 'Nível ' + cfg.nivel;
+if (cfg.escuro) document.body.classList.add('escuro');
+
+function instrucoes(){
+  const vocab = (cfg.palavras || []).slice(0, 30).join(', ');
+  return [
+    'You are a friendly English conversation partner for a Brazilian learner at level ' + (cfg.nivel || 'A2') + '.',
+    'Topic: ' + (cfg.tema || 'everyday life') + '. Keep the conversation on this topic.',
+    'Speak only English, in short turns of one to three sentences, and always end with a question.',
+    'Match your vocabulary and speed to the level. Never switch to Portuguese unless the learner is completely stuck.',
+    'When the learner makes a mistake that matters, repeat their sentence correctly in a natural way before continuing, without lecturing.',
+    vocab ? 'Try to use these words the learner is studying: ' + vocab + '.' : '',
+    'Start now by greeting them and asking the first question about the topic.'
+  ].filter(Boolean).join(' ');
+}
+
+function conectar(){
+  if (!cfg.chave){ estado('Sem chave do Gemini.'); return; }
+  const modelo = MODELOS[tentativa];
+  if (!modelo){ estado('Nenhum modelo de voz respondeu.'); return; }
+
+  ws = new WebSocket(WS + encodeURIComponent(cfg.chave));
+  ws.onopen = function(){
+    ws.send(JSON.stringify({
+      setup: {
+        model: 'models/' + modelo,
+        generationConfig: {
+          responseModalities: ['AUDIO'],
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: cfg.voz || 'Zephyr' } } }
+        },
+        systemInstruction: { parts: [{ text: instrucoes() }] },
+        inputAudioTranscription: {},
+        outputAudioTranscription: {}
+      }
+    }));
+  };
+  ws.onmessage = function(ev){
+    if (ev.data instanceof Blob) ev.data.text().then(processar);
+    else processar(ev.data);
+  };
+  ws.onerror = function(){ if (!aberto) proximoModelo(); };
+  ws.onclose = function(){
+    if (!aberto) proximoModelo();
+    else { estado('Conversa encerrada.'); desligarMic(); }
+  };
+}
+
+function proximoModelo(){
+  tentativa++;
+  if (tentativa < MODELOS.length){ estado('tentando outro modelo...'); conectar(); }
+  else estado('Nenhum modelo de voz disponível nessa chave.');
+}
+
+function processar(texto){
+  let m;
+  try { m = JSON.parse(texto); } catch (e) { return; }
+
+  if (m.setupComplete){
+    aberto = true;
+    estado('Pode falar');
+    el('btn-mic').disabled = false;
+    el('btn-mic').textContent = 'Microfone ligado';
+    ligarMic();
+    return;
+  }
+
+  const sc = m.serverContent;
+  if (!sc) return;
+
+  if (sc.interrupted) pararSom();
+
+  if (sc.inputTranscription && sc.inputTranscription.text){
+    parcialMeu += sc.inputTranscription.text;
+    balaoMeu = escrever(balaoMeu, 'minha', parcialMeu);
+  }
+  if (sc.outputTranscription && sc.outputTranscription.text){
+    parcialDele += sc.outputTranscription.text;
+    balaoDele = escrever(balaoDele, 'dele', parcialDele);
+  }
+
+  const partes = (sc.modelTurn && sc.modelTurn.parts) || [];
+  partes.forEach(function(p){
+    if (p.inlineData && p.inlineData.data) tocar(p.inlineData.data);
+  });
+
+  if (sc.turnComplete){
+    if (parcialMeu) transcricao.push('Eu: ' + parcialMeu.trim());
+    if (parcialDele) transcricao.push('Gemini: ' + parcialDele.trim());
+    parcialMeu = ''; parcialDele = '';
+    balaoMeu = null; balaoDele = null;
+  }
+}
+
+function escrever(balao, classe, texto){
+  el('instrucao').classList.add('oculto');
+  if (!balao){
+    balao = document.createElement('div');
+    balao.className = 'fala ' + classe;
+    el('conversa').appendChild(balao);
+  }
+  balao.textContent = texto;
+  el('conversa').scrollTop = el('conversa').scrollHeight;
+  return balao;
+}
+
+/* ---------------- áudio de saída (24 kHz) ---------------- */
+function tocar(b64){
+  if (!ctxSaida) ctxSaida = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+  const bin = atob(b64);
+  const n = Math.floor(bin.length / 2);
+  const buf = ctxSaida.createBuffer(1, n, 24000);
+  const canal = buf.getChannelData(0);
+  for (let i = 0; i < n; i++){
+    let v = (bin.charCodeAt(i*2+1) << 8) | bin.charCodeAt(i*2);
+    if (v > 32767) v -= 65536;
+    canal[i] = v / 32768;
+  }
+  const src = ctxSaida.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctxSaida.destination);
+  const agora = ctxSaida.currentTime;
+  if (proximoSom < agora) proximoSom = agora + 0.04;
+  src.start(proximoSom);
+  proximoSom += buf.duration;
+  fontes.push(src);
+  el('onda').classList.remove('oculto');
+  src.onended = function(){ if (ctxSaida.currentTime >= proximoSom - 0.05) el('onda').classList.add('oculto'); };
+}
+
+function pararSom(){
+  fontes.forEach(function(s){ try { s.stop(); } catch (e) {} });
+  fontes.length = 0;
+  proximoSom = 0;
+  el('onda').classList.add('oculto');
+}
+
+/* ---------------- áudio de entrada (16 kHz) ---------------- */
+async function ligarMic(){
+  try {
+    trilha = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+    });
+  } catch (e){
+    estado('Sem permissão para o microfone.');
+    el('btn-mic').disabled = true;
+    return;
+  }
+
+  ctxEntrada = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+  const fonte = ctxEntrada.createMediaStreamSource(trilha);
+  const processador = ctxEntrada.createScriptProcessor(4096, 1, 1);
+  const mudoSaida = ctxEntrada.createGain();
+  mudoSaida.gain.value = 0; // evita o eco do próprio microfone
+
+  processador.onaudioprocess = function(ev){
+    if (!aberto || mudo || !ws || ws.readyState !== 1) return;
+    const dados = reamostrar(ev.inputBuffer.getChannelData(0), ctxEntrada.sampleRate, 16000);
+    ws.send(JSON.stringify({
+      realtimeInput: { audio: { mimeType: 'audio/pcm;rate=16000', data: paraBase64(dados) } }
+    }));
+  };
+
+  fonte.connect(processador);
+  processador.connect(mudoSaida);
+  mudoSaida.connect(ctxEntrada.destination);
+}
+
+// Safari ignora o sampleRate pedido, então reamostra na mão quando precisa
+function reamostrar(entrada, de, para){
+  if (de === para) return entrada;
+  const razao = de / para;
+  const saida = new Float32Array(Math.floor(entrada.length / razao));
+  for (let i = 0; i < saida.length; i++) saida[i] = entrada[Math.floor(i * razao)];
+  return saida;
+}
+
+function paraBase64(amostras){
+  let bin = '';
+  for (let i = 0; i < amostras.length; i++){
+    let v = Math.max(-1, Math.min(1, amostras[i]));
+    v = v < 0 ? v * 32768 : v * 32767;
+    const u = v < 0 ? v + 65536 : v;
+    bin += String.fromCharCode(u & 255, (u >> 8) & 255);
+  }
+  return btoa(bin);
+}
+
+function desligarMic(){
+  if (trilha) trilha.getTracks().forEach(function(t){ t.stop(); });
+  if (ctxEntrada) ctxEntrada.close();
+  trilha = null; ctxEntrada = null;
+}
+
+/* ---------------- controles ---------------- */
+function alternarMudo(){
+  mudo = !mudo;
+  const b = el('btn-mic');
+  b.classList.toggle('mudo', mudo);
+  b.textContent = mudo ? 'Microfone desligado' : 'Microfone ligado';
+  estado(mudo ? 'Pausado' : 'Pode falar');
+}
+
+function encerrar(){
+  aberto = false;
+  pararSom();
+  desligarMic();
+  if (ws) try { ws.close(); } catch (e) {}
+  if (parcialMeu) transcricao.push('Eu: ' + parcialMeu.trim());
+  if (parcialDele) transcricao.push('Gemini: ' + parcialDele.trim());
+
+  if (window.opener && transcricao.length){
+    window.opener.postMessage({
+      origem: 'pratica',
+      tema: cfg.tema || '',
+      nivel: cfg.nivel || '',
+      minutos: Math.max(1, Math.round((Date.now() - inicio) / 60000)),
+      transcricao: transcricao.join('\n')
+    }, '*');
+  }
+  estado('Conversa salva. Pode fechar esta janela.');
+  setTimeout(function(){ window.close(); }, 1200);
+}
+
+const inicio = Date.now();
+window.addEventListener('beforeunload', desligarMic);
+conectar();
+</script>
+</body>
+</html>
